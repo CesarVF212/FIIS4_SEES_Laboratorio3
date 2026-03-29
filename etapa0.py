@@ -7,7 +7,7 @@
 # ----------------------
 import numpy as np
 import taichi as ti
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 # -------------------------------
@@ -113,16 +113,16 @@ def init_vel_field():
     # Iteramos por todo, ya que tenemos que añadir los valores nulos.
     for i, j in ti.ndrange((1, res+1), (1, res+1)):
 
-        if j < gap_size:                  # franja inferior → derecha a izquierda
-            vel_buffer[i, j] = ti.Vector([-1.0, 0.0])
+        if j < gap_size:                  # Franja inferior.
+            vel_buffer[i, j] = ti.Vector([-10.0, 0.0])
         
-        elif j < 2 * gap_size:            # franja central → izquierda a derecha
-            vel_buffer[i, j] = ti.Vector([1.0, 0.0])
+        elif j < 2 * gap_size:            # Franja central.
+            vel_buffer[i, j] = ti.Vector([10.0, 0.0])
         
-        elif j < 3 * gap_size:            # franja superior → derecha a izquierda
-            vel_buffer[i, j] = ti.Vector([-1.0, 0.0])
+        elif j < 3 * gap_size:            # Franja superior.
+            vel_buffer[i, j] = ti.Vector([-10.0, 0.0])
         
-        else:                             # fuera del dominio → velocidad nula
+        else:                             # Cualquier otra posición.
             vel_buffer[i, j] = ti.Vector([0.0, 0.0])
 
 
@@ -148,24 +148,42 @@ def diffuse(dens):
         dens.swap()
 
 
+# ----------------------------------------------
+# --- FUNCIÓN AUXILIAR: Interpolación lineal --- (PRACTICA 3)
+# ----------------------------------------------
+
+@ti.func
+def bilerp(field: ti.template(), x: float, y: float) -> float:
+    
+    # Obtenemos puntos y vecinos proximos.
+    i0 = int(ti.floor(x))
+    j0 = int(ti.floor(y))
+    i1 = i0 + 1
+    j1 = j0 + 1
+
+    # Y la diferencia entre el desplazamiento. Esto nos indica cuanto caso le hacemos a cada elemento.
+    s = x - i0
+    t = y - j0
+
+    # Devolvemos la interpolación por distancia.
+    interpolation = (1-s)*(1-t) * field[i0, j0] +  s *(1-t) * field[i1, j0] +  (1-s) * t * field[i0, j1] +   s * t * field[i1, j1]
+    return  interpolation
+
+
 # -------------------------------------
 # --- FUNCIÓN: Calculo de advección --- (PRACTICA 3)
 # -------------------------------------
 
 @ti.kernel
-def advect(vel_buffer: ti.template()):
-
+def advect(dens_cur: ti.template(), dens_nxt: ti.template(), vel: ti.template()):
+    
     for i, j in ti.ndrange((1, res+1), (1, res+1)):
-        
-        # Calculamos de donde viene nuestro vector velocidad para cada celda.
-        x0 = i - vel_buffer[i, j].x * dt
-        y0 = j - vel_buffer[i, j].y * dt
-
-        # Tratamos los casos en la frontera. Nos garantizamos poder interpolar.
+        x0 = i - vel[i, j].x * dt
+        y0 = j - vel[i, j].y * dt
         x0 = ti.max(0.5, ti.min(res + 0.5, x0))
         y0 = ti.max(0.5, ti.min(res + 0.5, y0))
+        dens_nxt[i, j] = bilerp(dens_cur, x0, y0)
 
-        # Interpolamos con los 4 vecinos mas cercanos.
 
     
 # --------------------------
@@ -206,7 +224,10 @@ def step(input_data):
     add_sources(dens.cur, input_data)
     set_boundaries(dens.cur)
     diffuse(dens)
-    advect(vel_buffer)
+
+    advect(dens.cur, dens.nxt, vel_buffer)
+    dens.swap()                            
+    set_boundaries(dens.cur) 
 
 
 # -------------------------
