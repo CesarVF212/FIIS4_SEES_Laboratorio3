@@ -103,7 +103,7 @@ def add_sources(dens: ti.template(), input_data: ti.types.ndarray()):
 # ------------------------------------------
 
 @ti.kernel
-def init_vel_field(verbose: bool):
+def init_vel_field():
 
     # Queremos añadir una franja horizontal (en mitad) y dos verticales.
 
@@ -168,7 +168,6 @@ def set_boundaries(field: ti.template()):
     field[0,      res+1]  = (field[1, res+1]  + field[0, res])    / 2
     field[res+1,  res+1]  = (field[res, res+1]+ field[res+1, res])/ 2
 
-
 # -------------------------------
 # --- FUNCIÓN: Inicialización ---
 # -------------------------------
@@ -176,8 +175,7 @@ def set_boundaries(field: ti.template()):
 def init():
     dens.cur.fill(0)
     dens.nxt.fill(0)
-    init_vel_field(True)
-    # show_vel_field()
+    init_vel_field()
 
 
 # --------------------------------------
