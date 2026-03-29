@@ -46,6 +46,7 @@ dt = 0.03
 
 # Cantidad de iteraciones de la difusión para cada step.
 DIFFUSION_STEPS = 100
+FIELD_SPEED = 15
 
 
 # --------------------------
@@ -117,17 +118,17 @@ def init_vel_field():
     # Iteramos por todo, ya que tenemos que añadir los valores nulos.
     for i, j in ti.ndrange((1, res+1), (1, res+1)):
 
-        if j < gap_size:                  # Franja inferior.
-            vel_buffer[i, j] = ti.Vector([-10.0, 0.0])
+        if j < gap_size:        # Franja inferior.
+            vel_buffer[i, j] = ti.Vector([ - FIELD_SPEED, 0.0 ])
         
-        elif j < 2 * gap_size:            # Franja central.
-            vel_buffer[i, j] = ti.Vector([10.0, 0.0])
+        elif j < 2 * gap_size:  # Franja central.
+            vel_buffer[i, j] = ti.Vector([ FIELD_SPEED, 0.0 ])
         
-        elif j < 3 * gap_size:            # Franja superior.
-            vel_buffer[i, j] = ti.Vector([-10.0, 0.0])
+        elif j < 3 * gap_size:  # Franja superior.
+            vel_buffer[i, j] = ti.Vector([ - FIELD_SPEED, 0.0 ])
         
-        else:                             # Cualquier otra posición.
-            vel_buffer[i, j] = ti.Vector([0.0, 0.0])
+        else:                   # Cualquier otra posición.
+            vel_buffer[i, j] = ti.Vector([ 0.0, 0.0 ])
 
 
 # ------------------------------------
