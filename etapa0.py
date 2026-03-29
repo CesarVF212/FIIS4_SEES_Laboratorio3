@@ -148,6 +148,28 @@ def diffuse(dens):
         dens.swap()
 
 
+# -------------------------------------
+# --- FUNCIÓN: Calculo de advección --- (PRACTICA 3)
+# -------------------------------------
+
+@ti.kernel
+def advect(dens: ti.template, vel_buffer: ti.template()):
+
+    for i, j in ti.ndrange((1, res+1), (1, res+1)):
+        
+        # Calculamos de donde viene nuestro vector velocidad para cada celda.
+        x0 = i - vel_buffer[i, j].x * dt
+        y0 = j - vel_buffer[i, j].y * dt
+
+        # Tratamos los casos en la frontera. Nos garantizamos poder interpolar.
+        x0 = ti.max(0.5, ti.min(res + 0.5, x0))
+        y0 = ti.max(0.5, ti.min(res + 0.5, y0))
+
+        # Interpolamos con los 4 vecinos mas cercanos.
+
+    
+
+# ------------------------------------
 # --------------------------
 # --- FUNCIÓN: Contornos --- (PRACTICA 2)
 # --------------------------
@@ -186,6 +208,7 @@ def step(input_data):
     add_sources(dens.cur, input_data)
     set_boundaries(dens.cur)
     diffuse(dens)
+    advect(vel_buffer)
 
 
 # -------------------------
