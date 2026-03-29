@@ -153,7 +153,7 @@ def diffuse(dens):
 # -------------------------------------
 
 @ti.kernel
-def advect(dens: ti.template, vel_buffer: ti.template()):
+def advect(vel_buffer: ti.template()):
 
     for i, j in ti.ndrange((1, res+1), (1, res+1)):
         
@@ -168,8 +168,6 @@ def advect(dens: ti.template, vel_buffer: ti.template()):
         # Interpolamos con los 4 vecinos mas cercanos.
 
     
-
-# ------------------------------------
 # --------------------------
 # --- FUNCIÓN: Contornos --- (PRACTICA 2)
 # --------------------------
