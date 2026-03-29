@@ -1,10 +1,9 @@
-# Referencia: https://github.com/taichi-dev/taichi/blob/master/python/taichi/examples/ggui_examples/stable_fluid_ggui.py
-
 # CÉSAR VIDAL FERNÁNDEZ.
 
 # ----------------------
 # --- IMPORTACIONES ---
 # ----------------------
+
 import numpy as np
 import taichi as ti
 # import matplotlib.pyplot as plt
@@ -16,6 +15,7 @@ import taichi as ti
 
 arch = ti.vulkan if ti._lib.core.with_vulkan() else ti.metal
 ti.init(arch=arch)
+
 
 # --------------------------------
 # --- INICIALIZACIÓN DE PLANOS ---
@@ -87,13 +87,17 @@ def add_sources(dens: ti.template(), input_data: ti.types.ndarray()):
 
     # PRACTICA 2: Cambiamos el bucle para que no itere por las "celdas extendidas"
     for i, j in ti.ndrange((1, res+1), (1, res+1)):
+       
         densidad = input_data[2] * s_dens
         mx, my = input_data[0], input_data[1]
+       
         # Centro casilla i,j
         cx = i + 0.5
         cy = j + 0.5
+        
         # Distancia al centro de la casilla (al cuadrado)
         d2 = (cx - mx) ** 2 + (cy - my) ** 2
+        
         # Decaimiento exponencial
         dens[i, j] += dt * densidad * ti.exp(-6 * d2 / s_radius**2)
 
@@ -141,6 +145,7 @@ def jacobi_iter(dens_cur: ti.template(), dens_nxt: ti.template()):
 
 def diffuse(dens):
     for _ in range(DIFFUSION_STEPS):  # Iteraciones de Jacobi
+    
         jacobi_iter(dens.cur, dens.nxt)
 
         # Tras cada iteración revisamos las fronteras.
@@ -180,14 +185,18 @@ def advect(dens_cur: ti.template(), dens_nxt: ti.template(), vel: ti.template())
     for i, j in ti.ndrange((1, res+1), (1, res+1)):
         x0 = i - vel[i, j].x * dt
         y0 = j - vel[i, j].y * dt
+
+        # Tratamos los elementos que se salen del plano.
         x0 = ti.max(0.5, ti.min(res + 0.5, x0))
         y0 = ti.max(0.5, ti.min(res + 0.5, y0))
+
+        # Interpolación lineal de los 4 vecinos próximos.
         dens_nxt[i, j] = bilerp(dens_cur, x0, y0)
 
 
     
 # --------------------------
-# --- FUNCIÓN: Contornos --- (PRACTICA 2)
+# --- FUNCIÓN: Contornos --- (PRACTICA 2 + 3)
 # --------------------------
 
 @ti.kernel
@@ -195,16 +204,16 @@ def set_boundaries(field: ti.template()):
 
     # Podemos iterar de una vez ya que nuestro grid siempre es cuadrado.
     for i in range(res + 2):
-        field[i, 0]     = field[i, 1]      # Abajo
-        field[i, res+1] = field[i, res]    # Arriba.
-        field[0, i]     = field[1, i]      # Izquierda
-        field[res+1, i] = field[res, i]    # Derecha
+        field[i, 0]         = field[i, 1]      # Abajo.
+        field[i, res + 1]   = field[i, res]    # Arriba.
+        field[0, i]         = field[1, i]      # Izquierda.
+        field[res + 1, i]   = field[res, i]    # Derecha.
 
     # Caso especial: esquinas. Hacemos el promedio de sus vecinos (sin diagonales).
-    field[0,      0]      = (field[1, 0]      + field[0, 1])      / 2
-    field[res+1,  0]      = (field[res, 0]    + field[res+1, 1])  / 2
-    field[0,      res+1]  = (field[1, res+1]  + field[0, res])    / 2
-    field[res+1,  res+1]  = (field[res, res+1]+ field[res+1, res])/ 2
+    field[0, 0]             = (field[1, 0]          + field[0, 1])          / 2
+    field[res + 1, 0]       = (field[res, 0]        + field[res + 1, 1])    / 2
+    field[0, res + 1]       = (field[1, res+1]      + field[0, res])        / 2
+    field[res + 1, res + 1] = (field[res, res+1]    + field[res + 1, res])  / 2
 
 # -------------------------------
 # --- FUNCIÓN: Inicialización ---
@@ -253,16 +262,20 @@ def main():
         # Interacciones de teclado.
         if window.get_event(ti.ui.PRESS):
             e = window.event
+
             if e.key == ti.ui.ESCAPE:  # ESC para salir
                 break
+            
             elif e.key == "r":  # 'r' para resetear
                 paused = False
                 init()
+            
             elif e.key == "p":  # 'p' para pausar/reanudar
                 paused = not paused
 
         # Interacciones del ratón. Se ha cambiado a Left-Mouse-Button para evitar problemas en MACOS.
         if window.is_pressed(ti.ui.LMB):
+
             mouse_xy = window.get_cursor_pos()
             input_data[0] = mouse_xy[0] * res
             input_data[1] = mouse_xy[1] * res
