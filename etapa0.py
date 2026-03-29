@@ -7,6 +7,7 @@
 # ----------------------
 import numpy as np
 import taichi as ti
+import matplotlib.pyplot as plt
 
 
 # -------------------------------
@@ -28,11 +29,6 @@ class FieldPair:
 
     def swap(self):
         self.cur, self.nxt = self.nxt, self.cur
-
-# Velocidades en el plano.
-class FieldVelocity:
-    def __init__(self, field):
-        self = field
 
 
 # -----------------------------------
@@ -78,8 +74,8 @@ _density_field_2 = ti.field(float, shape=(res + 2, res + 2))
 
 dens = FieldPair(_density_field_1, _density_field_2)
 
-# Campos de velocidad. PRACTICA 3. Se deben inicializar como vectores 2D.
-vel_buffer = FieldVelocity(ti.field(n = 2, dtype=float, shape=(res + 2, res + 2)))
+# PRACTICA 3: Campos de velocidad. Se deben inicializar como vectores 2D.
+vel_buffer = ti.Vector.field(n=2, dtype=float, shape=(res + 2, res + 2))
 
 
 # ------------------------------
@@ -100,6 +96,35 @@ def add_sources(dens: ti.template(), input_data: ti.types.ndarray()):
         d2 = (cx - mx) ** 2 + (cy - my) ** 2
         # Decaimiento exponencial
         dens[i, j] += dt * densidad * ti.exp(-6 * d2 / s_radius**2)
+
+
+# ------------------------------------------
+# --- FUNCIÓN: Añadir campo de velocidad --- (PRACTICA 3).
+# ------------------------------------------
+
+@ti.kernel
+def init_vel_field(verbose: bool):
+
+    # Queremos añadir una franja horizontal (en mitad) y dos verticales.
+
+    # Estas franjas son siempre de 1/3 del dominio.
+    gap_size = res / 3
+
+    # Iteramos por todo, ya que tenemos que añadir los valores nulos.
+    for i, j in ti.ndrange((1, res+1), (1, res+1)):
+
+        if j < gap_size:                  # franja inferior → derecha a izquierda
+            vel_buffer[i, j] = ti.Vector([-1.0, 0.0])
+        
+        elif j < 2 * gap_size:            # franja central → izquierda a derecha
+            vel_buffer[i, j] = ti.Vector([1.0, 0.0])
+        
+        elif j < 3 * gap_size:            # franja superior → derecha a izquierda
+            vel_buffer[i, j] = ti.Vector([-1.0, 0.0])
+        
+        else:                             # fuera del dominio → velocidad nula
+            vel_buffer[i, j] = ti.Vector([0.0, 0.0])
+
 
 # ------------------------------------
 # --- FUNCIÓN: Calculo de difusión --- (PRACTICA 2)
@@ -151,6 +176,8 @@ def set_boundaries(field: ti.template()):
 def init():
     dens.cur.fill(0)
     dens.nxt.fill(0)
+    init_vel_field(True)
+    # show_vel_field()
 
 
 # --------------------------------------
