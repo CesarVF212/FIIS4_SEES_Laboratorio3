@@ -20,6 +20,7 @@ ti.init(arch=arch)
 # --- INICIALIZACIÓN DE PLANOS ---
 # --------------------------------
 
+# Puntos en el plano.
 class FieldPair:
     def __init__(self, current_field, next_field):
         self.cur = current_field
@@ -27,6 +28,11 @@ class FieldPair:
 
     def swap(self):
         self.cur, self.nxt = self.nxt, self.cur
+
+# Velocidades en el plano.
+class FieldVelocity:
+    def __init__(self, field):
+        self = field
 
 
 # -----------------------------------
@@ -71,6 +77,9 @@ _density_field_1 = ti.field(float, shape=(res + 2, res + 2))
 _density_field_2 = ti.field(float, shape=(res + 2, res + 2))
 
 dens = FieldPair(_density_field_1, _density_field_2)
+
+# Campos de velocidad. PRACTICA 3. Se deben inicializar como vectores 2D.
+vel_buffer = FieldVelocity(ti.field(n = 2, dtype=float, shape=(res + 2, res + 2)))
 
 
 # ------------------------------
