@@ -13,7 +13,7 @@ import taichi as ti
 # --- INICIALIACIÓN DE TAICHI ---
 # -------------------------------
 
-arch = ti.vulkan if ti._lib.core.with_vulkan() else ti.metal
+arch = ti.vulkan if ti._lib.core.with_vulkan() else ti.vulkan
 ti.init(arch=arch)
 
 
