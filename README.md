@@ -1,3 +1,65 @@
+# --- ENGLISH ---
+
+# SFX Simulation — Lab 3 (Stable Fluids II)
+
+This lab implements density advection for a 2D fluid simulation in Taichi Lang, using the semi-Lagrangian method with bilinear interpolation.
+A static velocity field is initialized with horizontal stripes to visually verify that the density is transported correctly.
+
+---
+
+## SFX Simulation
+### BSc in Software Engineering
+#### U-tad — Academic Year 25/26 | Lab 3 (Stable Fluids II)
+
+## § Instructions §
+
+- The code for the lab must be organized in a properly documented Python script (.py).
+- The use of code from references or language models (LLMs) such as ChatGPT or GitHub Copilot is not allowed.
+- The lab can be done individually or in pairs; the video must be individual.
+  - The first line of the Python script must include the names of the team members.
+
+### Use of Libraries
+
+The use of the Python standard libraries and the Taichi Lang library is allowed. NumPy may be used for auxiliary tasks, but the core logic of the simulation is expected to be implemented in Taichi. The use of other libraries requires prior authorization.
+
+---
+
+## Density Advection
+
+The goal of this lab is to implement **density advection** in the base code (`etapa0.py`) or on top of the Lab 2 solution. Advection simulates how density is transported by the fluid's velocity field: concentrations of density move following the direction and magnitude of the local velocities.
+
+To observe the effect of advection, a non-zero velocity field is required. In this lab, a static velocity field will be initialized so that the correct behavior of the implementation can be verified visually.
+
+---
+
+## Implementation
+
+1. **Initialize the Velocity Field.** Add a velocity field (`vel_buffer`) to the base code and create a Taichi kernel (`init_vel_field`) that initializes it with a simple pattern. For example, the velocity field could be initialized with a horizontal stripe in the middle of the domain with left-to-right velocities, and two horizontal stripes (one above and one below) with right-to-left velocities, with each stripe being approximately 1/3 of the total size of the domain.
+
+2. **Implement the `advect` function (Semi-Lagrangian Advection with Bilinear Interpolation).** Create a Taichi kernel `advect` that applies the advection step using the semi-Lagrangian method. For each cell, the kernel must trace the position backwards (*backtrace*) according to the velocity field and obtain the density value at that origin position. Since the resulting position will generally not coincide with a grid point, it will be necessary to implement an auxiliary function `bilerp` that performs **bilinear interpolation** from the four neighboring cells.
+
+3. **Modify the `step` function.** Integrate the new `advect` function into the `step` function at the appropriate place.
+
+> **Note on the graphical user interface (GUI):** If you experience problems using Taichi Lang's new GGUI user interface (based on Vulkan), you can use the previous version of the GUI. To make it easier to use the previous version, the alternative starter code `etapa0_no_vk.py` is provided.
+
+**The deadline for Lab 3 (Stable Fluids II) is April 12, 2026 at 23:59.**
+
+---
+
+## Video Explanation
+
+An explanatory video (**maximum 5 minutes**) detailing the **Semi-Lagrangian Advection method with Bilinear Interpolation**.
+
+The video must:
+
+- Explain concisely and clearly the implemented Semi-Lagrangian Advection method, highlighting its relevance for simulating density transport in fluids.
+- Clearly explain the use of Bilinear Interpolation within the Semi-Lagrangian Advection method, thus demonstrating an understanding of its role in the implementation.
+- Show the fluid simulation running with the implemented Semi-Lagrangian Advection method and explain how the effect of advection is visually observed in the density field. Demonstrate how the structure of the velocity field influences the movement of the fluid.
+
+*The understanding demonstrated and the clarity of the Video Explanation will account for 50% of the lab grade. The absence of a Video Explanation will result in a 0 for the lab grade.*
+
+# --- SPANISH ---
+
 # Simulación de SFX
 ## Grado en Ingeniería del Software
 ### U-tad — Curso 25/26 | Laboratorio 3 (Stable Fluids II)
